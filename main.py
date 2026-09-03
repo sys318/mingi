@@ -31,8 +31,8 @@ def reset_game():
 def die(reason, title):
     st.session_state.alive = False
     st.session_state.ending = False
-    st.session_state.status_message = reason
-    st.session_state.status_title = title
+    st.session_state.death_message = reason  # status_message를 death_message로 통일
+    st.session_state.death_title = title     # status_title을 death_title로 통일
     
     china_memes = [
         "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExMWE1ZDF4NWQ2MXVnMG1tMW50MWJzZjB2a3R2MW5xZmR1dG12aHVjayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/9rjKL78w9wY8uGzC1t/giphy.gif",
