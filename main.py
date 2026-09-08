@@ -10,6 +10,7 @@ if 'alive' not in st.session_state:
     st.session_state.status_message = ""
     st.session_state.status_title = ""
     st.session_state.mom_type = None
+    st.session_state.mom_name = ""
     st.session_state.social_credit = 500
     st.session_state.is_orphan = False
 
@@ -20,6 +21,7 @@ def reset_game():
     st.session_state.status_message = ""
     st.session_state.status_title = ""
     st.session_state.mom_type = None
+    st.session_state.mom_name = ""
     st.session_state.social_credit = 500
     st.session_state.is_orphan = False
 
@@ -77,8 +79,8 @@ with st.container():
     st.markdown('<div class="game-container">', unsafe_allow_html=True)
     st.title("김탁곤드레밥 생존기: 인피니티 멀티버스")
     
-    if st.session_state.alive and not st.session_state.ending and st.session_state.stage != 'birth':
-        label = "💀 [고아 페널티] 신용 점수:" if st.session_state.is_orphan else "⭐ 현재 사회 신용 점수:"
+    if st.session_state.alive and not st.session_state.ending and st.session_state.stage not in ['birth', 'mom_select']:
+        label = "💀 [고아 페널티] 신용 점수:" if st.session_state.is_orphan else f"⭐ 현재 사회 신용 점수 (엄마: {st.session_state.mom_name}):"
         st.markdown(f'<div class="credit-box">{label} {st.session_state.social_credit}점</div>', unsafe_allow_html=True)
 
     if not st.session_state.alive:
@@ -95,15 +97,29 @@ with st.container():
     else:
         if st.session_state.stage == 'birth':
             st.subheader("응애! 생명의 탄생")
-            if st.button("안전하게 태어나기 (엄마와 함께)", key="b1"): process_action(next_stage='main')
-            if st.button("자원해서 고아로 시작하기 (하드코어)", key="b2"): 
+            st.write("세상에 태어날 준비를 합니다. 어떤 환경에서 시작하시겠습니까?")
+            if st.button("엄마를 직접 스카우트해서 태어나기", key="b_mom"): process_action(next_stage='mom_select')
+            if st.button("상남자 특) 고아로 하드코어 시작하기", key="b_orphan"):
                 st.session_state.is_orphan = True
                 process_action(next_stage='main', credit_change=-100)
-            if st.button("탯줄을 목에 감고 버티기", key="b3"): process_action(fatal=True, fatal_reason="스스로 탯줄 넥타이를 매고 태어나기도 전에 질식사했습니다.", fatal_title="셀프 로그아웃")
+
+        elif st.session_state.stage == 'mom_select':
+            st.subheader("원하는 엄마의 유형을 선택하세요. (선택한 엄마는 절대 터지지 않습니다!)")
+            
+            def select_mom(m_type, m_name, bonus_credit):
+                st.session_state.mom_type = m_type
+                st.session_state.mom_name = m_name
+                st.session_state.is_orphan = False
+                process_action(next_stage='main', credit_change=bonus_credit)
+
+            if st.button("🍲 재벌가 마라탕집 사장님 엄마 (지원금 든든)", key="m_rich"): select_mom('rich', '마라탕 사장님', 100)
+            if st.button("🥋 무술 고수 대륙의 어머니 (보호력 만렙)", key="m_fighter"): select_mom('fighter', '무술 고수', 50)
+            if st.button("📱 틱톡커 관종 엄마 (관심종자 특화)", key="m_tiktok"): select_mom('tiktok', '틱톡커', 30)
+            if st.button("🇨🇳 당 간부 어머니 (신용 점수 버프)", key="m_party"): select_mom('party', '당 간부', 200)
+            if st.button("🤖 최첨단 AI 로봇 엄마 (충전식)", key="m_ai"): select_mom('ai', 'AI 로봇', 80)
 
         elif st.session_state.stage == 'main':
-            # 부당하게 랜덤으로 터지는 기믹 완전 삭제! 이제 선택지에 의해서만 결과가 갈립니다.
-            mom_status_text = "💀 [고아 모드] 보호자 없음" if st.session_state.is_orphan else "👩 [엄마 생존 중] 안심하고 일상을 즐기는 중"
+            mom_status_text = "💀 [고아 모드] 보호자 없음 (페널티 적용)" if st.session_state.is_orphan else f"👩 [보호자: {mom_name_safe()}] 안전하게 보호받는 중"
             st.info(mom_status_text)
             
             st.subheader("오늘 하루 무사히 살아남아야 합니다. 어디로 갈까요?")
@@ -213,3 +229,6 @@ with st.container():
             if st.button("적당한 2단계", key="es_3"): process_action(is_ending=True, win_msg="완벽한 마라의 맛을 깨닫고 미식가로 거듭났습니다.", win_title="엔딩: 고독한 미식가")
 
     st.markdown('</div>', unsafe_allow_html=True)
+
+def mom_name_safe():
+    return st.session_state.mom_name if st.session_state.mom_name else "보호자"
