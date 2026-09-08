@@ -10,7 +10,7 @@ if 'alive' not in st.session_state:
     st.session_state.status_message = ""
     st.session_state.status_title = ""
     st.session_state.mom_type = None
-    st.session_state.mom_name = ""
+    st.session_state.mom_name = "없음"
     st.session_state.social_credit = 500
     st.session_state.is_orphan = False
 
@@ -21,7 +21,7 @@ def reset_game():
     st.session_state.status_message = ""
     st.session_state.status_title = ""
     st.session_state.mom_type = None
-    st.session_state.mom_name = ""
+    st.session_state.mom_name = "없음"
     st.session_state.social_credit = 500
     st.session_state.is_orphan = False
 
@@ -80,7 +80,7 @@ with st.container():
     st.title("김탁곤드레밥 생존기: 인피니티 멀티버스")
     
     if st.session_state.alive and not st.session_state.ending and st.session_state.stage not in ['birth', 'mom_select']:
-        label = "💀 [고아 페널티] 신용 점수:" if st.session_state.is_orphan else f"⭐ 현재 사회 신용 점수 (엄마: {st.session_state.mom_name}):"
+        label = "💀 [고아 페널티] 신용 점수:" if st.session_state.is_orphan else f"⭐ 현재 사회 신용 점수 (엄마: {st.session_state.get('mom_name', '없음')}):"
         st.markdown(f'<div class="credit-box">{label} {st.session_state.social_credit}점</div>', unsafe_allow_html=True)
 
     if not st.session_state.alive:
@@ -101,6 +101,7 @@ with st.container():
             if st.button("엄마를 직접 스카우트해서 태어나기", key="b_mom"): process_action(next_stage='mom_select')
             if st.button("상남자 특) 고아로 하드코어 시작하기", key="b_orphan"):
                 st.session_state.is_orphan = True
+                st.session_state.mom_name = "없음"
                 process_action(next_stage='main', credit_change=-100)
 
         elif st.session_state.stage == 'mom_select':
@@ -119,7 +120,8 @@ with st.container():
             if st.button("🤖 최첨단 AI 로봇 엄마 (충전식)", key="m_ai"): select_mom('ai', 'AI 로봇', 80)
 
         elif st.session_state.stage == 'main':
-            mom_status_text = "💀 [고아 모드] 보호자 없음 (페널티 적용)" if st.session_state.is_orphan else f"👩 [보호자: {mom_name_safe()}] 안전하게 보호받는 중"
+            mom_display = st.session_state.get('mom_name', '없음')
+            mom_status_text = "💀 [고아 모드] 보호자 없음 (페널티 적용)" if st.session_state.is_orphan else f"👩 [보호자: {mom_display}] 안전하게 보호받는 중"
             st.info(mom_status_text)
             
             st.subheader("오늘 하루 무사히 살아남아야 합니다. 어디로 갈까요?")
@@ -229,6 +231,3 @@ with st.container():
             if st.button("적당한 2단계", key="es_3"): process_action(is_ending=True, win_msg="완벽한 마라의 맛을 깨닫고 미식가로 거듭났습니다.", win_title="엔딩: 고독한 미식가")
 
     st.markdown('</div>', unsafe_allow_html=True)
-
-def mom_name_safe():
-    return st.session_state.mom_name if st.session_state.mom_name else "보호자"
